@@ -169,6 +169,12 @@ task runGoalLift()
 		if (vexRT[Btn5U] == 1)
 		{
 			MRG = MLG = 127;
+		}
+		else if (vexRT[Btn5U] == 0)
+		{
+			MRG = MLG = -127;
+		}
+			/*
 			goalBtnVal = SensorValue[mLftBtnI];
 			btn5uPushed = vexRT[Btn5U];
 			lmtSwtchval = SensorValue[lmtSwtch];
@@ -179,6 +185,7 @@ task runGoalLift()
 
 			MRG = MLG = 0;
 		}
+		*/
 
 				if (vexRT[Btn5D] == 1)
 				{
