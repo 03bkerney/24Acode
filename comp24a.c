@@ -1,3 +1,5 @@
+#pragma config(Sensor, dgtl1,  mLftBtnI,       sensorTouch)
+#pragma config(Sensor, dgtl2,  lmtSwtch,       sensorTouch)
 #pragma config(Motor,  port2,           PivotMotor,    tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port3,           Claw,          tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port4,           ChainBar001,   tmotorVex393_MC29, openLoop)
@@ -36,7 +38,7 @@
 #define MPV motor[PivotMotor]
 
 const int DRIVE_TH_LOW = 7;
-const int DRIVE_TH_HIGH = 78;
+const int DRIVE_TH_HIGH = 73;
 
 
 
@@ -60,13 +62,23 @@ void pre_auton()
 task autonomous()
 {
 	//lift up arm
-	motor[ChainBar001] = motor[ChainBar002] = 90;
-	wait1Msec(1200);
+	motor[ChainBar001] = motor[ChainBar002] = -90;
+	wait1Msec(1000);
 	motor[ChainBar001] = motor[ChainBar002] = 0;
 	wait1Msec(500);
+	//	// put down goal lift & drive forward to the mobile goal
+	//motor[LeftGoalLift] = motor[RightGoalLift] = -90;
+	//motor[LeftDrive] = motor[RightDrive] = 75;
+	//wait1Msec(1500);
+	//motor[LeftGoalLift] = motor[RightGoalLift] = 0;
+	//motor[LeftDrive] = motor[RightDrive] = 75;
+	//wait1Msec(200);
+	//motor[LeftGoalLift] = motor[RightGoalLift] = 0;
+	//motor[LeftDrive] = motor[RightDrive] = 0;
+	//wait1Msec(300);
 	// put down goal lift
 	motor[LeftGoalLift] = motor[RightGoalLift] = -90;
-	wait1Msec(1700);
+	wait1Msec(1500);
 	motor[LeftGoalLift] = motor[RightGoalLift] = 0;
 	wait1Msec(500);
 	//drive forward to the mobile goal
@@ -76,155 +88,213 @@ task autonomous()
 	wait1Msec(500);
 	//lift up goal lift to pick up mobile goal
 	motor[LeftGoalLift] = motor[RightGoalLift] = 90;
-	wait1Msec(1600);
+	wait1Msec(1650);
 	motor[LeftGoalLift] = motor[RightGoalLift] = 0;
 	wait1Msec(500);
 	// backup to clear mobile goal
 	motor[LeftDrive] = motor[RightDrive] = -90;
-	wait1Msec(450);
+	wait1Msec(750);
 	motor[LeftDrive] = motor[RightDrive] = 0;
 	wait1Msec(500);
 	//turn to the right
 	motor[LeftDrive] = -90;
 	motor[RightDrive] = 90;
-	wait1Msec(600);
+	wait1Msec(610);
 	motor[LeftDrive] = motor[RightDrive] = 0;
 	wait1Msec(500);
 	// drive forward
 	motor[LeftDrive] = motor[RightDrive] = 90;
-	wait1Msec(470);
+	wait1Msec(300);
 	motor[LeftDrive] = motor[RightDrive] = 0;
 	wait1Msec(500);
 	//turn to the left 90
 	motor[LeftDrive] = -90;
 	motor[RightDrive] = 90;
-	wait1Msec(420);
+	motor[Claw] = 15;
+	wait1Msec(415);
 	motor[LeftDrive] = motor[RightDrive] = 0;
+	motor[Claw] = 0;
 	wait1Msec(500);
 	//drive forward
 	motor[LeftDrive] = motor[RightDrive] = 90;
-	wait1Msec(1470);
+	wait1Msec(1700);
+	motor[Claw] = 15;
 	motor[LeftDrive] = motor[RightDrive] = 0;
+	motor[Claw] = 0;
 	wait1Msec(500);
+	////drive forward
+	//	motor[LeftDrive] = motor[RightDrive] = 90;
+	//	wait1Msec(1700);
+	//	motor[LeftDrive] = motor[RightDrive] = 0;
+	//	wait1Msec(500);
+	////turn to the right 90
+	//	motor[LeftDrive] = -90;
+	//motor[RightDrive] = 90;
+	//wait1Msec(450);
+	//motor[LeftDrive] = motor[RightDrive] = 0;
+	//wait1Msec(500);
 	// put arm down
 	motor[LeftGoalLift] = motor[RightGoalLift] = -90;
-	wait1Msec(1700);
+	wait1Msec(1400);
+	motor[Claw] = 15;
 	motor[LeftGoalLift] = motor[RightGoalLift] = 0;
+	motor[Claw] = 0;
 	wait1Msec(500);
 	//backup
 	motor[LeftDrive] = motor[RightDrive] = -90;
+	motor[Claw] = 15;
 	wait1Msec(1000);
-	motor[LeftDrive] = motor[RightDrive] = 0;
+	motor[ChainBar001] = motor[ChainBar002] = 90;
+	wait1Msec(1000);
+	motor[ChainBar001] = motor[ChainBar002] = 0;
 	wait1Msec(500);
-	////lift up arm
-	//motor[LeftGoalLift] = motor[RightGoalLift] = 90;
-	//wait1Msec(1000);
-	//motor[LeftGoalLift] = motor[RightGoalLift] = 0;
-	//wait1Msec(500);
-	////backup
-	//motor[LeftDrive] = motor[RightDrive] = -90;
-	//wait1Msec(500);
-	//motor[LeftDrive] = motor[RightDrive] = 0;
-	//wait1Msec(500);
+	motor[LeftDrive] = motor[RightDrive] = 0;
+	motor[Claw] = 0;
+	wait1Msec(500);
 }
-
-
-task controlDrive()
+int lmtSwtchval = 0;
+int btn5dPushed = 0;
+int goalBtnVal = 0;
+int btn5uPushed = 0;
+task runGoalLift()
 {
-	while (true)
-	{
-		if (abs(RML) > DRIVE_TH_HIGH)
-		{
-			MLD = RML * 2;
-		}
-		else if (abs(RML) > DRIVE_TH_LOW)
-		{
-			MLD = RML;
-		}
-		else {
-			MLD = 0;
-		}
-
-		if (abs(RMR) > DRIVE_TH_HIGH)
-		{
-			MRD = RMR * 2;
-		}
-		else if (abs(RMR) > DRIVE_TH_LOW)
-		{
-			MRD = RMR;
-		}
-		else {
-			MRD = 0;
-		}
-	}
-}
-
-bool btnIsPushed = false;
-
-task usercontrol()
-{
-	startTask(controlDrive);
-
-	while (true)
-	{
-		//todo:
-		//toggle boolean to run lift
-
-		//write code to run lift
-		if (vexRT[Btn6D] == 1)
-		{
-			btnIsPushed = true;
-			MCB = CBT = 90;
-		}
-		else if (vexRT[Btn6U] == 1)
-		{
-			btnIsPushed = true;
-			MCB = CBT = -90;
-			}
-			else {
-			btnIsPushed = false;
-			MCB = CBT = 0;
-		}
-
-
-
-		//write code for claw
-		if (vexRT[Btn8D] == 1)
-		{
-			btnIsPushed = true;
-			MCW = 127;
-			wait1Msec(15000);
-		}
-		else if (vexRT[Btn8L] == 1)
-		{
-			btnIsPushed = true;
-			MCW = -127;
-		}
-		else
-		{
-			btnIsPushed = false;
-			MCW = 0;
-		}
-
-
-
+	while(true) {
 		// mobile goal lift code
+
+		lmtSwtchval = SensorValue[lmtSwtch];
+		btn5dPushed = vexRT[Btn5D];
+		btn5uPushed = vexRT[Btn5U];
+		goalBtnVal = SensorValue[mLftBtnI];
+
 		if (vexRT[Btn5U] == 1)
 		{
-			btnIsPushed = true;
 			MRG = MLG = 127;
-		}
-		else if (vexRT[Btn5D] == 1)
-		{
-			btnIsPushed = true;
-			MRG = MLG = -127;
-		}
-		else
-		{
-			btnIsPushed = false;
+			goalBtnVal = SensorValue[mLftBtnI];
+			btn5uPushed = vexRT[Btn5U];
+			lmtSwtchval = SensorValue[lmtSwtch];
+			btn5dPushed = vexRT[Btn5D];
+			wait1Msec(200);
+			while (SensorValue[mLftBtnI] == 0) {
+			}
+
 			MRG = MLG = 0;
 		}
 
-	}
+				if (vexRT[Btn5D] == 1)
+				{
+					MRG = MLG = -127;
+					goalBtnVal = SensorValue[mLftBtnI];
+					btn5uPushed = vexRT[Btn5U];
+					lmtSwtchval = SensorValue[lmtSwtch];
+					btn5dPushed = vexRT[Btn5D];
+					wait1Msec(200);
 
-}
+					while (SensorValue[lmtSwtch] == 0) {
+					}
+
+					MRG = MLG = 0;
+				}
+
+
+			}
+		}
+
+		task controlDrive()
+		{
+			while (true)
+			{
+				if (abs(RML) > DRIVE_TH_HIGH)
+				{
+					MLD = RML * 2;
+				}
+				else if (abs(RML) > DRIVE_TH_LOW)
+				{
+					MLD = RML;
+				}
+				else {
+					MLD = 0;
+				}
+
+				if (abs(RMR) > DRIVE_TH_HIGH)
+				{
+					MRD = RMR * 2;
+				}
+				else if (abs(RMR) > DRIVE_TH_LOW)
+				{
+					MRD = RMR;
+				}
+				else {
+					MRD = 0;
+				}
+			}
+		}
+
+		bool btnIsPushed = false;
+
+		task usercontrol()
+		{
+			startTask(controlDrive);
+			startTask(runGoalLift);
+			/*
+			while (RML = RMR > 15);{
+			RMR = RML = 90;
+			}
+
+			while (RML = RMR < 15);{
+			RML = RMR = 50;
+			wait1Msec(200);
+			else if
+			RML = RMR = 30;
+			wait1Msec(200);
+			else
+			RML = RMR = 10;
+			wait1Msec(200);
+			}
+			while (RML = RMR = 0);
+			RML = RMR = 0;
+			}
+			*/
+
+			while (true)
+			{
+				//todo:
+				//toggle boolean to run lift
+
+				//write code to run lift
+				if (vexRT[Btn6D] == 1)
+				{
+					btnIsPushed = true;
+					MCB = CBT = 90;
+				}
+				else if (vexRT[Btn6U] == 1)
+				{
+					btnIsPushed = true;
+					MCB = CBT = -90;
+				}
+				else {
+					btnIsPushed = false;
+					MCB = CBT = 0;
+				}
+
+
+
+
+				//write code for claw
+				if (vexRT[Btn8D] == 1)
+				{		btnIsPushed = true;
+					MCW = 127;
+				}
+				else if (vexRT[Btn8L] == 1)
+				{
+					btnIsPushed = true;
+					MCW = -127;
+				}
+				else
+				{
+					btnIsPushed = false;
+					MCW = 15;
+				}
+
+			}
+
+		}
